@@ -1,0 +1,21 @@
+# $script = <<-'SCRIPT'
+# echo "These are my \"quotes\"! I am provisioning my guest."
+# date > /etc/vagrant_provisioned_at
+# SCRIPT
+Vagrant.configure('2') do |config|
+  config.vm.define "node" do |node|
+    node.vm.network :private_network, ip: "10.10.0.4"
+    node.vm.network "forwarded_port", guest: 80, host: 8080
+    node.vm.box = "ubuntu/impish64"
+    node.vm.hostname = 'debian'
+    node.vm.synced_folder 'html', '/var/www/html'
+    node.vm.provision :shell,
+      path: "bootstrap.sh"
+      # inline: "echo Hello, World" // inline: $script
+    node.vm.provider :virtualbox do |vb|
+      vb.gui = false
+      vb.customize ["modifyvm", :id, "--memory", "4048"]
+      vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+end
